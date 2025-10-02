@@ -24,3 +24,10 @@ config["lets_encrypt"] = os.getenv("TRAEFIK_LETS_ENCRYPT") == "True"
 
 # Dump the configuration to stdout
 # json.dump(config, fp=sys.stdout)
+if os.path.exists("termix.env"): 
+	data = agent.read_envfile("termix.env") 
+	config["PORT"] = data.get("PORT", "8080") 
+else: 
+	config["PORT"] = "8080" 
+ 
+json.dump(config, fp=sys.stdout)
