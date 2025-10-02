@@ -15,3 +15,9 @@ data = json.load(sys.stdin)
 
 #This is specific to you module, so you need to change it accordingly.
 #agent.dump_env()
+PORT = data.get("PORT", "8080") 
+ 
+termix = { 
+ "PORT" : PORT ,
+} 
+agent.write_envfile("termix.env", termix) 
