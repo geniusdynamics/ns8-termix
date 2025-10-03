@@ -14,6 +14,7 @@ images=()
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="termix"
+app_version="release-1.7.1"
 
 # Create a new empty container image
 container=$(buildah from scratch)
@@ -45,7 +46,7 @@ buildah config --entrypoint=/ \
     --label="org.nethserver.authorizations=traefik@node:routeadm" \
     --label="org.nethserver.tcp-ports-demand=1" \
     --label="org.nethserver.rootfull=0" \
-    --label="org.nethserver.images=ghcr.io/lukegus/termix:latest" \
+    --label="org.nethserver.images=ghcr.io/lukegus/termix:${app_version}" \
     "${container}"
 # Commit the image
 buildah commit "${container}" "${repobase}/${reponame}"
