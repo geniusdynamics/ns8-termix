@@ -22,12 +22,30 @@ config["host"] = os.getenv("TRAEFIK_HOST","")
 config["http2https"] = os.getenv("TRAEFIK_HTTP2HTTPS") == "True"
 config["lets_encrypt"] = os.getenv("TRAEFIK_LETS_ENCRYPT") == "True"
 
-# Dump the configuration to stdout
-# json.dump(config, fp=sys.stdout)
-if os.path.exists("termix.env"): 
-	data = agent.read_envfile("termix.env") 
-	config["PORT"] = data.get("PORT", "8080") 
-else: 
-	config["PORT"] = "8080" 
- 
+# Read termix.env configuration
+if os.path.exists("termix.env"):
+    data = agent.read_envfile("termix.env")
+    config["PORT"] = data.get("PORT", "8080")
+    # OIDC Configuration
+    config["oidc_client_id"] = data.get("OIDC_CLIENT_ID", "")
+    config["oidc_client_secret"] = data.get("OIDC_CLIENT_SECRET", "")
+    config["oidc_issuer_url"] = data.get("OIDC_ISSUER_URL", "")
+    config["oidc_authorization_url"] = data.get("OIDC_AUTHORIZATION_URL", "")
+    config["oidc_token_url"] = data.get("OIDC_TOKEN_URL", "")
+    config["oidc_userinfo_url"] = data.get("OIDC_USERINFO_URL", "")
+    config["oidc_identifier_path"] = data.get("OIDC_IDENTIFIER_PATH", "sub")
+    config["oidc_name_path"] = data.get("OIDC_NAME_PATH", "name")
+    config["oidc_scopes"] = data.get("OIDC_SCOPES", "openid email profile")
+else:
+    config["PORT"] = "8080"
+    config["oidc_client_id"] = ""
+    config["oidc_client_secret"] = ""
+    config["oidc_issuer_url"] = ""
+    config["oidc_authorization_url"] = ""
+    config["oidc_token_url"] = ""
+    config["oidc_userinfo_url"] = ""
+    config["oidc_identifier_path"] = "sub"
+    config["oidc_name_path"] = "name"
+    config["oidc_scopes"] = "openid email profile"
+
 json.dump(config, fp=sys.stdout)

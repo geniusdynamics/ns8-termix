@@ -31,6 +31,58 @@
             "type": "boolean",
             "title": "HTTP to HTTPS redirection",
             "description": "Redirect all the HTTP requests to HTTPS"
+        },
+        "oidc_client_id": {
+            "type": "string",
+            "title": "OIDC Client ID",
+            "description": "The client ID for OIDC authentication"
+        },
+        "oidc_client_secret": {
+            "type": "string",
+            "title": "OIDC Client Secret",
+            "description": "The client secret for OIDC authentication"
+        },
+        "oidc_issuer_url": {
+            "type": "string",
+            "title": "OIDC Issuer URL",
+            "description": "The issuer URL for OIDC authentication",
+            "format": "uri"
+        },
+        "oidc_authorization_url": {
+            "type": "string",
+            "title": "OIDC Authorization URL",
+            "description": "The authorization endpoint URL for OIDC authentication",
+            "format": "uri"
+        },
+        "oidc_token_url": {
+            "type": "string",
+            "title": "OIDC Token URL",
+            "description": "The token endpoint URL for OIDC authentication",
+            "format": "uri"
+        },
+        "oidc_userinfo_url": {
+            "type": "string",
+            "title": "OIDC Userinfo URL",
+            "description": "The userinfo endpoint URL for OIDC authentication (optional)",
+            "format": "uri"
+        },
+        "oidc_identifier_path": {
+            "type": "string",
+            "title": "OIDC Identifier Path",
+            "description": "The JSON path to the user identifier in the ID token",
+            "default": "sub"
+        },
+        "oidc_name_path": {
+            "type": "string",
+            "title": "OIDC Name Path",
+            "description": "The JSON path to the user name in the ID token",
+            "default": "name"
+        },
+        "oidc_scopes": {
+            "type": "string",
+            "title": "OIDC Scopes",
+            "description": "The scopes to request during OIDC authentication",
+            "default": "openid email profile"
         }
     }
 }
