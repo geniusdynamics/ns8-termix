@@ -14,7 +14,7 @@ images=()
 repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="termix"
-app_version="release-1.11.0"
+app_version="release-2.3.2"
 
 # Create a new empty container image
 container=$(buildah from scratch)
