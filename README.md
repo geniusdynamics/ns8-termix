@@ -11,7 +11,6 @@ NethServer 8 module for the Termix application, providing a web-based terminal i
 - [Update](#update)
 - [Get the Configuration](#get-the-configuration)
 - [Uninstall](#uninstall)
-- [Smarthost Setting Discovery](#smarthost-setting-discovery)
 - [Debug](#debug)
 - [Testing](#testing)
 - [UI Translation](#ui-translation)
@@ -63,6 +62,15 @@ The above command will:
 
 ## Update
 
+The module runs the official `ghcr.io/termix-ssh/termix` image.
+
+Termix 26.10.0 and later cannot open a database written by Termix 2.8 or
+older. The first time an instance created with an older module version
+starts after the update, `bin/prepare-termix-data` runs the Termix 2.9.2
+image once to migrate the data, then starts the current release. The same
+happens when an old backup is restored. Expect the first start to take a few
+minutes while the extra image is downloaded.
+
 To update the module to a new version:
 
 ```bash
@@ -88,25 +96,6 @@ To uninstall the instance:
 ```bash
 remove-module --no-preserve termix1
 ```
-
-## Smarthost setting discovery
-
-Some configuration settings, like the smarthost setup, are not part of the
-`configure-module` action input: they are discovered by looking at some
-Redis keys. To ensure the module is always up-to-date with the
-centralized [smarthost
-setup](https://geniusdynamics.github.io/ns8-core/core/smarthost/) every time
-termix starts, the command `bin/discover-smarthost` runs and refreshes
-the `state/smarthost.env` file with fresh values from Redis.
-
-Furthermore if smarthost setup is changed when termix is already
-running, the event handler `events/smarthost-changed/10reload_services`
-restarts the main module service.
-
-See also the `systemd/user/termix.service` file.
-
-This setting discovery is just an example to understand how the module is
-expected to work: it can be rewritten or discarded completely.
 
 ## Debug
 
@@ -184,13 +173,18 @@ Some CLI commands are needed to debug the module.
 
 ## Testing
 
-Test the module using the `test-module.sh` script:
+The tests are made using [Robot Framework](https://robotframework.org/) and
+live in `tests/`. Every image published by the "Publish images" workflow is
+tested on QEMU virtual machines by the "Test module" workflow, through the
+shared [`test-module-qemu.yml`](https://github.com/NethServer/ns8-github-actions/blob/v1/docs/test-module-qemu.md)
+workflow:
 
-```bash
-./test-module.sh <NODE_ADDR> ghcr.io/geniusdynamics/termix:latest
-```
-
-The tests are made using [Robot Framework](https://robotframework.org/).
+- the `install` scenario installs the image under test on a clean node
+- the `update` scenario installs the previous release
+  (`ghcr.io/geniusdynamics/termix:latest`), then updates it to the image
+  under test
+- the UI tests take screenshots of the Status and Settings pages, which are
+  posted as a comment on the pull request
 
 ## UI Translation
 
