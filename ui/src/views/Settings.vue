@@ -66,6 +66,96 @@
               <cv-accordion-item :open="toggleAccordion[0]">
                 <template slot="title">{{ $t("settings.advanced") }}</template>
                 <template slot="content">
+                  <h4 class="mg-bottom">{{ $t("settings.oidc_settings") }}</h4>
+                  <cv-text-input
+                    :label="$t('settings.oidc_client_id')"
+                    v-model.trim="oidcClientId"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_client_id)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcClientId"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('settings.oidc_client_secret')"
+                    type="password"
+                    v-model.trim="oidcClientSecret"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_client_secret)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcClientSecret"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('settings.oidc_issuer_url')"
+                    placeholder="https://auth.example.com"
+                    v-model.trim="oidcIssuerUrl"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_issuer_url)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcIssuerUrl"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('settings.oidc_authorization_url')"
+                    placeholder="https://auth.example.com/authorize"
+                    v-model.trim="oidcAuthorizationUrl"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_authorization_url)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcAuthorizationUrl"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('settings.oidc_token_url')"
+                    placeholder="https://auth.example.com/token"
+                    v-model.trim="oidcTokenUrl"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_token_url)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcTokenUrl"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('settings.oidc_userinfo_url')"
+                    placeholder="https://auth.example.com/userinfo"
+                    v-model.trim="oidcUserinfoUrl"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_userinfo_url)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcUserinfoUrl"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('settings.oidc_identifier_path')"
+                    placeholder="sub"
+                    v-model.trim="oidcIdentifierPath"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_identifier_path)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcIdentifierPath"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('settings.oidc_name_path')"
+                    placeholder="name"
+                    v-model.trim="oidcNamePath"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_name_path)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcNamePath"
+                  >
+                  </cv-text-input>
+                  <cv-text-input
+                    :label="$t('settings.oidc_scopes')"
+                    placeholder="openid email profile"
+                    v-model.trim="oidcScopes"
+                    class="mg-bottom"
+                    :invalid-message="$t(error.oidc_scopes)"
+                    :disabled="loading.getConfiguration || loading.configureModule"
+                    ref="oidcScopes"
+                  >
+                  </cv-text-input>
                 </template>
               </cv-accordion-item>
             </cv-accordion>
@@ -125,6 +215,16 @@ export default {
       host: "",
       isLetsEncryptEnabled: false,
       isHttpToHttpsEnabled: true,
+      // OIDC fields
+      oidcClientId: "",
+      oidcClientSecret: "",
+      oidcIssuerUrl: "",
+      oidcAuthorizationUrl: "",
+      oidcTokenUrl: "",
+      oidcUserinfoUrl: "",
+      oidcIdentifierPath: "sub",
+      oidcNamePath: "name",
+      oidcScopes: "openid email profile",
       loading: {
         getConfiguration: false,
         configureModule: false,
@@ -135,6 +235,15 @@ export default {
         host: "",
         lets_encrypt: "",
         http2https: "",
+        oidc_client_id: "",
+        oidc_client_secret: "",
+        oidc_issuer_url: "",
+        oidc_authorization_url: "",
+        oidc_token_url: "",
+        oidc_userinfo_url: "",
+        oidc_identifier_path: "",
+        oidc_name_path: "",
+        oidc_scopes: "",
       },
     };
   },
@@ -202,6 +311,17 @@ export default {
       this.host = config.host;
       this.isLetsEncryptEnabled = config.lets_encrypt;
       this.isHttpToHttpsEnabled = config.http2https;
+      
+      // Load OIDC configuration
+      this.oidcClientId = config.oidc_client_id || "";
+      this.oidcClientSecret = config.oidc_client_secret || "";
+      this.oidcIssuerUrl = config.oidc_issuer_url || "";
+      this.oidcAuthorizationUrl = config.oidc_authorization_url || "";
+      this.oidcTokenUrl = config.oidc_token_url || "";
+      this.oidcUserinfoUrl = config.oidc_userinfo_url || "";
+      this.oidcIdentifierPath = config.oidc_identifier_path || "sub";
+      this.oidcNamePath = config.oidc_name_path || "name";
+      this.oidcScopes = config.oidc_scopes || "openid email profile";
 
       this.loading.getConfiguration = false;
       this.focusElement("host");
@@ -271,6 +391,15 @@ export default {
             host: this.host,
             lets_encrypt: this.isLetsEncryptEnabled,
             http2https: this.isHttpToHttpsEnabled,
+            oidc_client_id: this.oidcClientId,
+            oidc_client_secret: this.oidcClientSecret,
+            oidc_issuer_url: this.oidcIssuerUrl,
+            oidc_authorization_url: this.oidcAuthorizationUrl,
+            oidc_token_url: this.oidcTokenUrl,
+            oidc_userinfo_url: this.oidcUserinfoUrl,
+            oidc_identifier_path: this.oidcIdentifierPath,
+            oidc_name_path: this.oidcNamePath,
+            oidc_scopes: this.oidcScopes,
           },
           extra: {
             title: this.$t("settings.instance_configuration", {

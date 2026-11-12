@@ -13,11 +13,31 @@ import agent
 # If parsing fails, output everything to stderr
 data = json.load(sys.stdin)
 
-#This is specific to you module, so you need to change it accordingly.
-#agent.dump_env()
-PORT = data.get("PORT", "8080") 
- 
-termix = { 
- "PORT" : PORT ,
-} 
-agent.write_envfile("termix.env", termix) 
+# This is specific to you module, so you need to change it accordingly.
+# agent.dump_env()
+PORT = data.get("PORT", "8080")
+
+# OIDC Configuration
+OIDC_CLIENT_ID = data.get("oidc_client_id", "")
+OIDC_CLIENT_SECRET = data.get("oidc_client_secret", "")
+OIDC_ISSUER_URL = data.get("oidc_issuer_url", "")
+OIDC_AUTHORIZATION_URL = data.get("oidc_authorization_url", "")
+OIDC_TOKEN_URL = data.get("oidc_token_url", "")
+OIDC_USERINFO_URL = data.get("oidc_userinfo_url", "")
+OIDC_IDENTIFIER_PATH = data.get("oidc_identifier_path", "")
+OIDC_NAME_PATH = data.get("oidc_name_path", "name")
+OIDC_SCOPES = data.get("oidc_scopes", "")
+
+termix = {
+    "PORT": PORT,
+    "OIDC_CLIENT_ID": OIDC_CLIENT_ID,
+    "OIDC_CLIENT_SECRET": OIDC_CLIENT_SECRET,
+    "OIDC_ISSUER_URL": OIDC_ISSUER_URL,
+    "OIDC_AUTHORIZATION_URL": OIDC_AUTHORIZATION_URL,
+    "OIDC_TOKEN_URL": OIDC_TOKEN_URL,
+    "OIDC_USERINFO_URL": OIDC_USERINFO_URL,
+    "OIDC_IDENTIFIER_PATH": OIDC_IDENTIFIER_PATH,
+    "OIDC_NAME_PATH": OIDC_NAME_PATH,
+    "OIDC_SCOPES": OIDC_SCOPES,
+}
+agent.write_envfile("termix.env", termix)
