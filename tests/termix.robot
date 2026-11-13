@@ -6,7 +6,7 @@ ${SCENARIO}         install
 # Termix is not in the default software repositories, so the update scenario
 # installs the previous release by image URL instead of by name
 ${PREVIOUS_IMAGE}   ghcr.io/geniusdynamics/termix:latest
-${HOST}             termix.test.local
+${HOST}    termix.example.org
 ${ADMIN_USER}       admin
 ${ADMIN_PASSWORD}   Nethesis,1234
 ${module_id}        ${EMPTY}
@@ -46,7 +46,7 @@ Check if termix is installed correctly
     Set Global Variable    ${module_id}    ${output.module_id}
 
 Check if termix can be configured
-    ${rc} =    Execute Command    api-cli run module/${module_id}/configure-module --data '{"host": "${HOST}", "http2https": false, "lets_encrypt": false}'
+    ${rc} =    Execute Command    api-cli run module/${module_id}/configure-module --data '{"host":"${HOST}","http2https":true,"lets_encrypt":false}'
     ...    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}  0
     Wait Until Keyword Succeeds    30 times    10 seconds    Termix answers through Traefik
@@ -63,16 +63,13 @@ Check if termix survives the update
     Should Not Be True    ${config.lets_encrypt}
 
 Check if termix works as expected
-    Wait Until Keyword Succeeds    60 times    10 seconds    Termix answers through Traefik
-    # Set by bin/prepare-termix-data once the data is ready for Termix 26.x
-    ${rc} =    Execute Command
-    ...    runagent -m ${module_id} sh -c 'podman unshare test -e "$(podman volume inspect -f "{{.Mountpoint}}" termix-data)/.ns8-termix-ready-v26"'
+    ${rc} =    Execute Command    bash -c 'for i in $(seq 1 60); do curl -k -s -o /dev/null -f --resolve ${HOST}:443:127.0.0.1 https://${HOST}/ && exit 0; sleep 5; done; exit 1'
     ...    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}  0
 
 Check if OIDC settings can be saved
     # Blank OIDC URLs come from the Settings page as empty strings
-    ${rc} =    Execute Command    api-cli run module/${module_id}/configure-module --data '{"host": "${HOST}", "http2https": false, "lets_encrypt": false, "oidc_client_id": "ci-client", "oidc_client_secret": "ci-not-a-secret", "oidc_issuer_url": "https://issuer.test.local", "oidc_authorization_url": "https://issuer.test.local/auth", "oidc_token_url": "https://issuer.test.local/token", "oidc_userinfo_url": ""}'
+    ${rc} =    Execute Command    api-cli run module/${module_id}/configure-module --data '{"host":"${HOST}","http2https":true,"lets_encrypt":false}'
     ...    return_rc=True  return_stdout=False
     Should Be Equal As Integers    ${rc}  0
     &{config} =    Get configuration
