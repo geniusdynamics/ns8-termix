@@ -40,7 +40,7 @@ jobs:
         working-directory: ./ui
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: yarn install --immutable
         working-directory: ./ui
 
       - name: Build application
