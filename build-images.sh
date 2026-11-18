@@ -15,7 +15,7 @@ repobase="${REPOBASE:-ghcr.io/geniusdynamics}"
 # Configure the image name
 reponame="termix"
 # renovate: datasource=docker packageName=ghcr.io/termix-ssh/termix
-app_version=26.11.1
+app_version=26.11.2
 corepack_version=0.36.0
 
 # Create a new empty container image
