@@ -37,11 +37,6 @@
             "title": "OIDC Client ID",
             "description": "The client ID for OIDC authentication"
         },
-        "oidc_client_secret": {
-            "type": "string",
-            "title": "OIDC Client Secret",
-            "description": "The client secret for OIDC authentication"
-        },
         "oidc_issuer_url": {
             "type": "string",
             "title": "OIDC Issuer URL",
@@ -111,6 +106,59 @@
             "title": "OIDC Scopes",
             "description": "The scopes to request during OIDC authentication",
             "default": "openid email profile"
+        },
+        "oidc_mode": {
+            "enum": [
+                "native",
+                "manual",
+                "ns8"
+            ]
+        },
+        "oidc_provider": {
+            "type": "string"
+        },
+        "oidc_domain": {
+            "type": "string"
+        },
+        "oidc_allow_password_login": {
+            "type": "boolean"
+        },
+        "oidc_silent_login": {
+            "type": "boolean"
+        },
+        "oidc_secret_set": {
+            "type": "boolean"
+        },
+        "oidc_legacy_callback": {
+            "type": "boolean"
+        },
+        "oidc_callback_path": {
+            "type": "string"
+        },
+        "oidc_providers": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "id",
+                    "label",
+                    "domains"
+                ],
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "domains": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     }
 }
