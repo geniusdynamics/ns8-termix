@@ -186,18 +186,18 @@ Check if a published NS8 provider registers a working Termix sign-in
     Dictionary Should Not Contain Key    ${config}    oidc_client_secret
     Run node command    runagent -m ${managed_id} termix-refresh-sso
     ${login} =    Wait Until Keyword Succeeds    60s    3s    Run node command
-    ...    curl -kfSs --resolve ${MANAGED_HOST}:443:127.0.0.1 https://${MANAGED_HOST}/users/auth/sso/start
+    ...    curl -kfSs --resolve ${MANAGED_HOST}:443:127.0.0.1 https://${MANAGED_HOST}/users/auth/oidc/start
     Should Contain    ${login}    ${KEYCLOAK_HOST}
     Should Contain    ${login}    %2Fplugin-api%2Fsso%2Fcallback
     Run node command
-    ...    curl -kfSs --resolve ${MANAGED_HOST}:443:127.0.0.1 https://${MANAGED_HOST}/users/auth/methods | jq -e '(.methods | any(.id=="password")) and ([.methods[] | select(.id=="sso") | .instances[] | select(.autoStart != true)] | length == 1)' >/dev/null
+    ...    curl -kfSs --resolve ${MANAGED_HOST}:443:127.0.0.1 https://${MANAGED_HOST}/users/auth/methods | jq -e '(.methods | any(.id=="password")) and ([.methods[] | select(.id=="oidc") | .instances[] | select(.autoStart != true)] | length == 1)' >/dev/null
     Run node command
     ...    api-cli run module/${managed_id}/configure-module --data '{"host":"${MANAGED_HOST}","http2https":true,"lets_encrypt":false,"oidc_mode":"ns8","oidc_provider":"${uuid}","oidc_domain":"${OIDC_DOMAIN}","oidc_allow_password_login":false,"oidc_silent_login":true}'
     Wait Until Keyword Succeeds    60s    3s    Run node command
-    ...    curl -kfSs --resolve ${MANAGED_HOST}:443:127.0.0.1 https://${MANAGED_HOST}/users/auth/methods | jq -e '(.methods | all(.id!="password")) and ([.methods[] | select(.id=="sso") | .instances[] | select(.autoStart == true)] | length == 1)' >/dev/null
+    ...    curl -kfSs --resolve ${MANAGED_HOST}:443:127.0.0.1 https://${MANAGED_HOST}/users/auth/methods | jq -e '(.methods | all(.id!="password")) and ([.methods[] | select(.id=="oidc") | .instances[] | select(.autoStart == true)] | length == 1)' >/dev/null
     Run node command    runagent -m ${managed_id} termix-restore-password-login
     Wait Until Keyword Succeeds    60s    3s    Run node command
-    ...    curl -kfSs --resolve ${MANAGED_HOST}:443:127.0.0.1 https://${MANAGED_HOST}/users/auth/methods | jq -e '(.methods | any(.id=="password")) and ([.methods[] | select(.id=="sso") | .instances[] | select(.autoStart != true)] | length == 1)' >/dev/null
+    ...    curl -kfSs --resolve ${MANAGED_HOST}:443:127.0.0.1 https://${MANAGED_HOST}/users/auth/methods | jq -e '(.methods | any(.id=="password")) and ([.methods[] | select(.id=="oidc") | .instances[] | select(.autoStart != true)] | length == 1)' >/dev/null
 
 Take screenshots
     [Tags]    ui
