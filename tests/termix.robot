@@ -174,6 +174,8 @@ Check if a published NS8 provider registers a working Termix sign-in
     ...    curl --noproxy '*' -fSs https://${KEYCLOAK_HOST}/realms/master/.well-known/openid-configuration >/dev/null
     ${termix} =    Install OIDC fixture    ${IMAGE_URL}
     Set Suite Variable    ${managed_id}    ${termix}
+    Run node command
+    ...    runagent -m ${managed_id} python3 -c 'from termix_sso import discovery; discovery("https://${KEYCLOAK_HOST}/realms/master", "oidc_provider")'
     ${uuid} =    Run node command    redis-cli --no-auth-warning HGET cluster/module_uuid ${keycloak_id}
     Run node command
     ...    api-cli run module/${managed_id}/configure-module --data '{"host":"${MANAGED_HOST}","http2https":true,"lets_encrypt":false,"oidc_mode":"ns8","oidc_provider":"${uuid}","oidc_domain":"${OIDC_DOMAIN}"}'

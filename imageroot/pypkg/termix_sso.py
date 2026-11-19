@@ -6,10 +6,12 @@ import os
 from contextlib import contextmanager
 from pathlib import Path
 import re
+import ssl
 import sys
 import tempfile
 from urllib.parse import urlsplit
-from urllib.request import HTTPRedirectHandler, Request, build_opener
+from urllib.error import HTTPError, URLError
+from urllib.request import HTTPSHandler, HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 CALLBACK = "/plugin-api/sso/callback"
 LEGACY_CALLBACK = "/users/oidc/callback"
@@ -123,10 +125,19 @@ def providers(rdb):
 
 
 def discovery(issuer, field):
+    context = ssl.create_default_context()
+    # NS8 nodes can be Debian or Rocky. Include their system CA bundle even
+    # when the agent's Python runtime has a different compiled trust path.
+    for bundle in ("/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt"):
+        if Path(bundle).is_file():
+            context.load_verify_locations(cafile=bundle)
+    handlers = [NoRedirect(), HTTPSHandler(context=context)]
+    if field == "oidc_provider":
+        handlers.append(ProxyHandler({}))
     try:
         url = issuer.rstrip("/") + "/.well-known/openid-configuration"
         request = Request(url, headers={"Accept": "application/json"})
-        with build_opener(NoRedirect()).open(request, timeout=10) as response:
+        with build_opener(*handlers).open(request, timeout=10) as response:
             document = json.loads(response.read(256 * 1024))
         if document["issuer"].rstrip("/") != issuer.rstrip("/"):
             raise ValueError()
@@ -139,7 +150,16 @@ def discovery(issuer, field):
         if not all(isinstance(url, str) and https_url(url) for url in endpoints.values()):
             raise ValueError()
         return endpoints
-    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+    except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
+        # Report the failure class without including response bodies or URLs.
+        reason = error.reason if isinstance(error, URLError) else error
+        if isinstance(error, HTTPError):
+            diagnostic = f"HTTP {error.code}"
+        elif isinstance(reason, ssl.SSLCertVerificationError):
+            diagnostic = f"TLS verification code {reason.verify_code}"
+        else:
+            diagnostic = type(reason).__name__
+        print(f"Termix could not read OIDC discovery ({diagnostic})", file=sys.stderr)
         raise ConfigError(field, "oidc_discovery_failed") from None
 
 
