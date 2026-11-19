@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[Unit]
+Description=Periodically refresh Termix NS8 OpenID Connect registration
+PartOf=termix.service
+
+[Timer]
+OnActiveSec=5min
+OnUnitActiveSec=15min
+RandomizedDelaySec=30s

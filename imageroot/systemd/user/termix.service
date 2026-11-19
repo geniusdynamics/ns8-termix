@@ -11,6 +11,7 @@
 [Unit]
 Description=Podman termix.service
 Requires=termix-app.service
+Wants=termix-sso-refresh.timer
 Before=termix-app.service
 
 [Service]

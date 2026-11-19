@@ -1,51 +1,34 @@
 #!/usr/bin/env python3
-
-#
-# Copyright (C) 2022 Nethesis S.r.l.
 # SPDX-License-Identifier: GPL-3.0-or-later
-#
 
-#
-# Read configuration
-#
-
+import json
 import os
 import sys
-import json
+
 import agent
+import termix_sso as sso
 
-# Prepare return variable
-config = {}
-
-# Read current configuration from the environment file
-config["host"] = os.getenv("TRAEFIK_HOST","")
-config["http2https"] = os.getenv("TRAEFIK_HTTP2HTTPS") == "True"
-config["lets_encrypt"] = os.getenv("TRAEFIK_LETS_ENCRYPT") == "True"
-
-# Read termix.env configuration
-if os.path.exists("termix.env"):
-    data = agent.read_envfile("termix.env")
-    config["PORT"] = data.get("PORT", "8080")
-    # OIDC Configuration
-    config["oidc_client_id"] = data.get("OIDC_CLIENT_ID", "")
-    config["oidc_client_secret"] = data.get("OIDC_CLIENT_SECRET", "")
-    config["oidc_issuer_url"] = data.get("OIDC_ISSUER_URL", "")
-    config["oidc_authorization_url"] = data.get("OIDC_AUTHORIZATION_URL", "")
-    config["oidc_token_url"] = data.get("OIDC_TOKEN_URL", "")
-    config["oidc_userinfo_url"] = data.get("OIDC_USERINFO_URL", "")
-    config["oidc_identifier_path"] = data.get("OIDC_IDENTIFIER_PATH", "sub")
-    config["oidc_name_path"] = data.get("OIDC_NAME_PATH", "name")
-    config["oidc_scopes"] = data.get("OIDC_SCOPES", "openid email profile")
-else:
-    config["PORT"] = "8080"
-    config["oidc_client_id"] = ""
-    config["oidc_client_secret"] = ""
-    config["oidc_issuer_url"] = ""
-    config["oidc_authorization_url"] = ""
-    config["oidc_token_url"] = ""
-    config["oidc_userinfo_url"] = ""
-    config["oidc_identifier_path"] = "sub"
-    config["oidc_name_path"] = "name"
-    config["oidc_scopes"] = "openid email profile"
-
+values = sso.read()
+config = {
+    "host": os.getenv("TRAEFIK_HOST", ""),
+    "http2https": os.getenv("TRAEFIK_HTTP2HTTPS") == "True",
+    "lets_encrypt": os.getenv("TRAEFIK_LETS_ENCRYPT") == "True",
+    "PORT": values.get("PORT", "8080"),
+    "oidc_mode": sso.mode(values),
+    "oidc_provider": values.get(sso.PROVIDER, ""),
+    "oidc_domain": values.get(sso.DOMAIN, ""),
+    "oidc_secret_set": bool(values.get("OIDC_CLIENT_SECRET")),
+    "oidc_legacy_callback": sso.enabled(values.get("OIDC_LEGACY_CALLBACK", "true")) and sso.mode(values) == "manual",
+    "oidc_allow_password_login": sso.enabled(values.get(sso.PASSWORD_LOGIN, "true")),
+    "oidc_silent_login": sso.enabled(values.get(sso.SILENT_LOGIN, "false")),
+    "oidc_callback_path": sso.CALLBACK,
+    "oidc_providers": [
+        {key: data[key] for key in ("id", "label", "domains")}
+        for data in sso.providers(agent.redis_connect()).values()
+    ],
+}
+config.update({
+    field: values.get(key) or default for field, (key, default) in sso.FIELDS.items()
+    if field != "oidc_client_secret"
+})
 json.dump(config, fp=sys.stdout)

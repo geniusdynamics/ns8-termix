@@ -1,43 +1,16 @@
 #!/usr/bin/env python3
-
-#
-# Copyright (C) 2022 Nethesis S.r.l.
 # SPDX-License-Identifier: GPL-3.0-or-later
-#
 
 import json
 import sys
-import agent
 
-# Try to parse the stdin as JSON.
-# If parsing fails, output everything to stderr
-data = json.load(sys.stdin)
+import termix_sso as sso
 
-# This is specific to you module, so you need to change it accordingly.
-# agent.dump_env()
-PORT = data.get("PORT", "8080")
-
-# OIDC Configuration
-OIDC_CLIENT_ID = data.get("oidc_client_id", "")
-OIDC_CLIENT_SECRET = data.get("oidc_client_secret", "")
-OIDC_ISSUER_URL = data.get("oidc_issuer_url", "")
-OIDC_AUTHORIZATION_URL = data.get("oidc_authorization_url", "")
-OIDC_TOKEN_URL = data.get("oidc_token_url", "")
-OIDC_USERINFO_URL = data.get("oidc_userinfo_url", "")
-OIDC_IDENTIFIER_PATH = data.get("oidc_identifier_path", "")
-OIDC_NAME_PATH = data.get("oidc_name_path", "name")
-OIDC_SCOPES = data.get("oidc_scopes", "")
-
-termix = {
-    "PORT": PORT,
-    "OIDC_CLIENT_ID": OIDC_CLIENT_ID,
-    "OIDC_CLIENT_SECRET": OIDC_CLIENT_SECRET,
-    "OIDC_ISSUER_URL": OIDC_ISSUER_URL,
-    "OIDC_AUTHORIZATION_URL": OIDC_AUTHORIZATION_URL,
-    "OIDC_TOKEN_URL": OIDC_TOKEN_URL,
-    "OIDC_USERINFO_URL": OIDC_USERINFO_URL,
-    "OIDC_IDENTIFIER_PATH": OIDC_IDENTIFIER_PATH,
-    "OIDC_NAME_PATH": OIDC_NAME_PATH,
-    "OIDC_SCOPES": OIDC_SCOPES,
-}
-agent.write_envfile("termix.env", termix)
+request = json.load(sys.stdin)
+with sso.locked():
+    previous = sso.read()
+    try:
+        settings = sso.configure(request, previous)
+        sso.save(settings, previous)
+    except sso.ConfigError as error:
+        sso.report(error)

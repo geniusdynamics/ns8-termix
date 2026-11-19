@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+import os
+import subprocess
+import sys
+
+import termix_sso as sso
+
+with sso.locked():
+    current = sso.read()
+    if sso.mode(current) != "ns8":
+        sys.exit(0)
+    try:
+        updated = sso.configure({"host": os.environ["TRAEFIK_HOST"]}, current, refresh=True)
+    except sso.ConfigError as error:
+        sys.exit(f"Termix SSO refresh failed ({error})")
+    if updated != current:
+        sso.save(updated, current)
+        subprocess.run(["systemctl", "--user", "try-restart", "termix.service", "termix-app.service"], check=True)
