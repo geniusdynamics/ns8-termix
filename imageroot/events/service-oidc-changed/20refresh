@@ -1,0 +1,14 @@
+#!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+import json
+import sys
+
+import agent
+import termix_sso as sso
+
+event = json.load(sys.stdin)
+settings = sso.read()
+if sso.mode(settings) == "ns8" and event.get("module_uuid") == settings[sso.PROVIDER]:
+    agent.run_helper("systemctl", "--user", "--no-block", "start",
+                     "termix-sso-refresh.service").check_returncode()

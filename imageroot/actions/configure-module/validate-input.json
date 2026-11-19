@@ -41,7 +41,8 @@
         "oidc_client_secret": {
             "type": "string",
             "title": "OIDC Client Secret",
-            "description": "The client secret for OIDC authentication"
+            "description": "The client secret for OIDC authentication",
+            "writeOnly": true
         },
         "oidc_issuer_url": {
             "type": "string",
@@ -112,6 +113,25 @@
             "title": "OIDC Scopes",
             "description": "The scopes to request during OIDC authentication",
             "default": "openid email profile"
+        },
+        "oidc_mode": {
+            "enum": [
+                "native",
+                "manual",
+                "ns8"
+            ]
+        },
+        "oidc_provider": {
+            "type": "string"
+        },
+        "oidc_domain": {
+            "type": "string"
+        },
+        "oidc_allow_password_login": {
+            "type": "boolean"
+        },
+        "oidc_silent_login": {
+            "type": "boolean"
         }
     }
 }
